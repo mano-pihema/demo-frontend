@@ -1,6 +1,18 @@
+import { getTodos } from '@/api/todos';
 import { Container, Flex } from '@chakra-ui/react';
+import { useQuery } from '@tanstack/react-query';
 
 const Home = () => {
+  const { data, isError, error, isPending } = useQuery({
+    queryKey: ['fetch'],
+    queryFn: () => getTodos(),
+  });
+
+  if (isPending) return <h3>Loading...</h3>;
+  if (isError) return <div>{error.message}</div>;
+
+  console.log(data);
+
   return (
     <Container backgroundColor={'teal'}>
       <h1>Hello App</h1>
