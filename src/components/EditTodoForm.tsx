@@ -1,40 +1,32 @@
 import { Container, Input, Stack, Text } from '@chakra-ui/react';
-import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addTodo } from '@/api/todos';
+import { updateTodo } from '@/api/todos';
 import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Todo } from '@/models/todo';
 
-const initialForm = {
-  id: 0,
-  title: '',
-  description: '',
-  dueDate: '',
-  priority: '',
-  status: '',
-};
+interface TodoCardProps {
+  todo: Todo;
+  showForm: (show: boolean) => void;
+}
 
-const AddTodoForm = () => {
-  const [formData, setFormData] = useState(initialForm);
+const EditTodoForm = ({ todo, showForm }: TodoCardProps) => {
+  const [formData, setFormData] = useState(todo);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const addMutation = useMutation({
-    mutationFn: () => mutationMap(),
+  const editMutation = useMutation({
+    mutationFn: () => updateTodo(todo.id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fetch'] });
       navigate('/');
     },
   });
 
-  function mutationMap() {
-    const mappedFormdata = { ...formData, dueDate: new Date(formData.dueDate) };
-    return addTodo(mappedFormdata);
-  }
-
   function submitHandler(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    addMutation.mutate();
+    editMutation.mutate();
   }
 
   const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,51 +35,55 @@ const AddTodoForm = () => {
     setFormData({
       ...formData,
       [name]: value,
+      [name]: name === 'dueDate' ? new Date(value) : value,
     });
   };
 
   return (
     <Container p={9}>
       <Text textStyle='xl' pb={2}>
-        Add a Task
+        Editing Task
       </Text>
       <form onSubmit={submitHandler}>
         <Stack gap={4}>
           <Input
             type='text'
             name='title'
-            placeholder='title'
+            value={formData.title}
             onChange={onChangeHandler}
           />
           <Input
             type='text'
             name='description'
-            placeholder='description'
+            value={formData.description}
             onChange={onChangeHandler}
           />
           <Input
             type='date'
             name='dueDate'
-            placeholder='due date'
+            value={formData.dueDate.toISOString().split('T')[0]}
             onChange={onChangeHandler}
           />
           <Input
             type='text'
             name='priority'
-            placeholder='priority'
+            value={formData.priority}
             onChange={onChangeHandler}
           />
           <Input
             type='text'
             name='status'
-            placeholder='status'
+            value={formData.status}
             onChange={onChangeHandler}
           />
           <button type='submit'>Submit</button>
+          <button type='button' onClick={() => showForm(false)}>
+            Cancel
+          </button>
         </Stack>
       </form>
     </Container>
   );
 };
 
-export default AddTodoForm;
+export default EditTodoForm;
