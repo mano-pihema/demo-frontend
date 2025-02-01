@@ -5,6 +5,7 @@ import TodoCard from './TodoCard';
 import { Todo } from '@/models/todo';
 import FilterBar from './FilterBar';
 import { useState } from 'react';
+import { filterAndSortTodos } from '@/services/filterAndSortTask';
 
 const filterbarState = {
   priority: '',
@@ -22,8 +23,8 @@ const Home = () => {
   });
 
   const handleFilterChange = (filterType: string, value: string) => {
-    setFilterBar((prevState) => ({
-      ...prevState,
+    setFilterBar((previousState) => ({
+      ...previousState,
       [filterType]: value,
     }));
   };
@@ -33,23 +34,7 @@ const Home = () => {
 
   const todos: Todo[] = data || [];
 
-  const processedTodos = todos
-    .map((todo) => ({
-      ...todo,
-      dueDate: new Date(todo.dueDate),
-    }))
-    .filter((todo) => {
-      return (
-        (filterBar.priority === '' || todo.priority === filterBar.priority) &&
-        (filterBar.status === '' || todo.status === filterBar.status)
-      );
-    });
-
-  if (filterBar.dueDate === 'Urgent') {
-    processedTodos.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-  } else if (filterBar.dueDate === 'Least Urgent') {
-    processedTodos.sort((a, b) => b.dueDate.getTime() - a.dueDate.getTime());
-  }
+  const processedTodos = filterAndSortTodos(todos, filterBar);
 
   return (
     <Container backgroundColor={'gray.300'} py={4}>
