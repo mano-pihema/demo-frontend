@@ -25,6 +25,9 @@ const AddTodoForm = () => {
       queryClient.invalidateQueries({ queryKey: ['fetch'] });
       navigate('/');
     },
+    onError: (error) => {
+      console.error('Validation error:', error);
+    },
   });
 
   function mutationMap() {
@@ -45,7 +48,6 @@ const AddTodoForm = () => {
       [name]: value,
     });
   };
-
   return (
     <Container p={9}>
       <Text textStyle='xl' pb={2}>
@@ -84,6 +86,9 @@ const AddTodoForm = () => {
             onChange={onChangeHandler}
           />
           <button type='submit'>Submit</button>
+          {addMutation.error && (
+            <Text color='red.500'>{addMutation.error.message}</Text>
+          )}
         </Stack>
       </form>
     </Container>
